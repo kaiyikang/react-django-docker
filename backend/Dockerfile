@@ -1,0 +1,15 @@
+# The initial Virtual Machine provides the version of python is 3.8.10, so here I use 3.8-alpine
+FROM python:3.9-alpine
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /code
+
+COPY requirements.txt /code
+
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir django psycopg2-binary 
+
+
+COPY . /code/
