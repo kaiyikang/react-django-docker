@@ -1,5 +1,11 @@
 version: "3.8"
 
+networks:
+  frontend_network:
+  backend_network:
+  db_network:
+
+
 services:
 
   db:
@@ -10,6 +16,8 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    networks:
+      - db_network
 
   backend:
     build: ./backend
@@ -17,10 +25,14 @@ services:
     volumes:
       - ./backend:/code
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     depends_on:
       - db
+    networks:
+      - frontend_network
+      - backend_network
+      - db_network

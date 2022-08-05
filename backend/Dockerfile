@@ -6,10 +6,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /code
 
-COPY requirements.txt /code
-
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir django psycopg2-binary 
-
 
 COPY . /code/
