@@ -6,7 +6,10 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /code
 
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir django psycopg2-binary 
+RUN apk add python3-dev build-base linux-headers pcre-dev \
+    && pip install --upgrade pip \
+    && pip install --no-cache-dir django psycopg2-binary \
+    && pip install uwsgi \
+    && pip install django-cors-headers
 
 COPY . /code/

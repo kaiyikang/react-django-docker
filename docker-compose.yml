@@ -1,9 +1,15 @@
 version: "3.8"
 
+volumes:
+  media_vol:
+  static_vol:
+  uwsgi_vol:
+
+
 networks:
   frontend_network:
-  backend_network:
   db_network:
+  nginx_network:
 
 
 services:
@@ -17,34 +23,59 @@ services:
     networks:
       - db_network
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    ports:
-      - 8881:3000
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    networks:
-      - frontend_network
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   ports:
+  #     - 8881:3000
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true
+  #   networks:
+  #     - frontend_network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./backend:/code
+      - ./backend:/backend
+      - uwsgi_vol:/uwsgi/
+    expose:
+      - 8000
     ports:
-      - 8880:8000
+      - 8881:8000
     env_file:
       - ./.env
+    networks:
+      - nginx_network
+      - frontend_network
+      - db_network
     depends_on:
       - db
+    tty: true
+    stdin_open: true
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 8880:80
+    expose:
+      - 80
+    volumes:
+      - uwsgi_vol:/uwsgi/
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./nginx/ssl:/nginx/ssl
+      - ./nginx/log:/var/log/nginx
+      - static_vol:/nginx/html/static
+      - media_vol:/nginx/html/media
     networks:
-      - frontend_network
-      - backend_network
-      - db_network
+      - nginx_network
+    restart: always
+    depends_on:
+      - backend
